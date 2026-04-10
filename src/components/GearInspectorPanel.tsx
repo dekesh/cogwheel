@@ -2,7 +2,6 @@ import {
   Alert,
   Button,
   Divider,
-  NumberInput,
   Select,
   Stack,
   Text,
@@ -10,6 +9,7 @@ import {
   Title,
 } from '@mantine/core';
 
+import { WheelNumberInput } from './WheelNumberInput';
 import { validateSpurGear } from '../domain/gears/calculations';
 import type { ProjectGear, GearProject } from '../domain/project/types';
 
@@ -112,99 +112,67 @@ export function GearInspectorPanel({
             }
           }}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Teeth"
           min={4}
           step={1}
           value={selectedGear.toothCount}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onUpdateGear(selectedGear.id, { toothCount: value });
-            }
-          }}
+          onChange={(value) => onUpdateGear(selectedGear.id, { toothCount: value })}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Module"
           min={0.2}
           step={0.1}
           decimalScale={2}
           value={selectedGear.module}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onUpdateGear(selectedGear.id, { module: value });
-            }
-          }}
+          onChange={(value) => onUpdateGear(selectedGear.id, { module: value })}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Pressure angle (degrees)"
           min={14.5}
           max={30}
           step={0.5}
           decimalScale={1}
           value={selectedGear.pressureAngleDegrees}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onUpdateGear(selectedGear.id, { pressureAngleDegrees: value });
-            }
-          }}
+          onChange={(value) => onUpdateGear(selectedGear.id, { pressureAngleDegrees: value })}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Thickness / print depth (mm)"
           min={0.5}
           step={0.5}
           decimalScale={2}
           value={selectedGear.thicknessMm}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onUpdateGear(selectedGear.id, { thicknessMm: value });
-            }
-          }}
+          onChange={(value) => onUpdateGear(selectedGear.id, { thicknessMm: value })}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Bore diameter (mm)"
           min={0}
           step={0.1}
           decimalScale={2}
           value={selectedGear.boreDiameterMm}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onUpdateGear(selectedGear.id, { boreDiameterMm: value });
-            }
-          }}
+          onChange={(value) => onUpdateGear(selectedGear.id, { boreDiameterMm: value })}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Inner cutout diameter (mm)"
           min={0}
           step={0.5}
           decimalScale={2}
           value={selectedGear.innerCutoutDiameterMm}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onUpdateGear(selectedGear.id, { innerCutoutDiameterMm: value });
-            }
-          }}
+          onChange={(value) => onUpdateGear(selectedGear.id, { innerCutoutDiameterMm: value })}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Rotation (degrees)"
           step={1}
           decimalScale={1}
           value={selectedGear.rotationDegrees}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onRotateGear(selectedGear.id, value);
-            }
-          }}
+          onChange={(value) => onRotateGear(selectedGear.id, value)}
         />
-        <NumberInput
+        <WheelNumberInput
           label="Backlash (mm)"
           step={0.01}
           decimalScale={3}
           value={selectedGear.backlashMm}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              onUpdateGear(selectedGear.id, { backlashMm: value });
-            }
-          }}
+          onChange={(value) => onUpdateGear(selectedGear.id, { backlashMm: value })}
         />
       </Stack>
 

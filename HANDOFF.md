@@ -77,6 +77,11 @@ This file tracks what has been decided, what has been done, and what remains so 
   - inspector now exposes manual rotation in degrees
   - manual rotation propagates through locked relations using tooth-count ratio math, which is intended to be reused for future animation
   - canvas grows with the available workspace instead of staying at a small fixed size
+- Improved canvas and panel interaction ergonomics:
+  - canvas now has explicit zoom in / zoom out controls
+  - drag math now respects the current zoom level
+  - navbar and inspector columns scroll vertically instead of letting content overflow off-screen
+  - right-side number inputs can be adjusted with the mouse wheel while focused
 - Implemented SVG document export:
   - selected-gear SVG generation
   - full-layout SVG generation

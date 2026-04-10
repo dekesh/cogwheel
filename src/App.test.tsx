@@ -85,6 +85,37 @@ describe('App', () => {
     expect(screen.getAllByText('Rotation: 18.0°').length).toBeGreaterThan(0);
   });
 
+  it('changes right-side numeric inputs with the mouse wheel', () => {
+    render(
+      <MantineProvider theme={theme}>
+        <App />
+      </MantineProvider>,
+    );
+
+    const rotationInput = screen.getByRole('textbox', { name: 'Rotation (degrees)' });
+
+    rotationInput.focus();
+    fireEvent.wheel(rotationInput, { deltaY: -100 });
+
+    expect(screen.getAllByText('Rotation: 1.0°').length).toBeGreaterThan(0);
+  });
+
+  it('zooms the canvas in and out', () => {
+    render(
+      <MantineProvider theme={theme}>
+        <App />
+      </MantineProvider>,
+    );
+
+    expect(screen.getByText('Zoom 100%')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(screen.getByText('Zoom 125%')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    expect(screen.getByText('Zoom 100%')).toBeDefined();
+  });
+
   it('exports the selected gear as an SVG document', () => {
     Object.defineProperty(URL, 'createObjectURL', {
       writable: true,

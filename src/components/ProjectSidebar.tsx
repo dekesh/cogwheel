@@ -3,13 +3,13 @@ import {
   Button,
   Checkbox,
   Divider,
-  NumberInput,
   SegmentedControl,
   Stack,
   Text,
   Title,
 } from '@mantine/core';
 
+import { WheelNumberInput } from './WheelNumberInput';
 import type { SvgExportMode } from '../domain/export/svgDocument';
 import type { GearProject } from '../domain/project/types';
 
@@ -100,17 +100,13 @@ export function ProjectSidebar({
         checked={includeShaftPieceInExport}
         onChange={(event) => onToggleIncludeShaftPieceInExport(event.currentTarget.checked)}
       />
-      <NumberInput
+      <WheelNumberInput
         label="Shaft clearance (mm)"
         min={0}
         step={0.05}
         decimalScale={2}
         value={shaftClearanceMm}
-        onChange={(value) => {
-          if (typeof value === 'number') {
-            onChangeShaftClearanceMm(value);
-          }
-        }}
+        onChange={onChangeShaftClearanceMm}
       />
 
       <Divider />

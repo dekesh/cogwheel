@@ -82,7 +82,7 @@ export function App() {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="md">
+      <AppShell.Navbar p="md" style={{ overflowY: 'auto' }}>
         <ProjectSidebar
           project={state.project}
           selectedGearId={state.selectedGearId}
@@ -117,7 +117,7 @@ export function App() {
         />
       </AppShell.Main>
 
-      <AppShell.Aside p="md">
+      <AppShell.Aside p="md" style={{ overflowY: 'auto' }}>
         <GearInspectorPanel
           project={state.project}
           selectedGearId={state.selectedGearId}

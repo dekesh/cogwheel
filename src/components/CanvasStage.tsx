@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Paper, Stack, Text, Title } from '@mantine/core';
+import { ActionIcon, Group, Paper, Stack, Text, Title } from '@mantine/core';
 
 import { GearSvgPreview } from './GearSvgPreview';
 import { snapGearPosition } from '../domain/project/layout';
@@ -9,6 +9,9 @@ const PIXELS_PER_MILLIMETER = 4;
 const CANVAS_MIN_HEIGHT_MM = 120;
 const MINIMUM_GEAR_PREVIEW_SIZE = 72;
 const PREVIEW_MARGIN_MM = 4;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2.5;
+const ZOOM_STEP = 0.25;
 
 type CanvasStageProps = {
   project: GearProject;
@@ -38,12 +41,18 @@ export function CanvasStage({
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const pixelsPerMillimeter = PIXELS_PER_MILLIMETER * zoom;
+
+  function changeZoom(delta: number) {
+    setZoom((current) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number((current + delta).toFixed(2)))));
+  }
 
   function renderGear(gear: GearProject['gears'][number]) {
     const previewDiameterMm = gear.geometry.outsideDiameterMm + PREVIEW_MARGIN_MM * 2;
     const previewSizePx = Math.max(
       MINIMUM_GEAR_PREVIEW_SIZE,
-      previewDiameterMm * PIXELS_PER_MILLIMETER,
+      previewDiameterMm * pixelsPerMillimeter,
     );
 
     return (
@@ -63,11 +72,11 @@ export function CanvasStage({
         onClick={() => onSelectGear(gear.id)}
         style={{
           position: 'absolute',
-          left: gear.position.x * PIXELS_PER_MILLIMETER,
-          top: gear.position.y * PIXELS_PER_MILLIMETER,
+          left: gear.position.x * pixelsPerMillimeter,
+          top: gear.position.y * pixelsPerMillimeter,
           width: previewSizePx + 28,
           cursor: dragState?.gearId === gear.id ? 'grabbing' : 'grab',
-          transform: `translate(-50%, -50%) rotate(${gear.rotationDegrees}deg)`,
+          transform: 'translate(-50%, -50%)',
           userSelect: 'none',
           display: 'flex',
           flexDirection: 'column',
@@ -82,6 +91,8 @@ export function CanvasStage({
             height: previewSizePx + 12,
             display: 'grid',
             placeItems: 'center',
+            transform: `rotate(${gear.rotationDegrees}deg)`,
+            transformOrigin: '50% 50%',
             borderRadius: '50%',
             background:
               selectedGearId === gear.id
@@ -126,8 +137,8 @@ export function CanvasStage({
         return;
       }
 
-      const x = (event.clientX - bounds.left - activeDrag.pointerOffsetX) / PIXELS_PER_MILLIMETER;
-      const y = (event.clientY - bounds.top - activeDrag.pointerOffsetY) / PIXELS_PER_MILLIMETER;
+      const x = (event.clientX - bounds.left - activeDrag.pointerOffsetX) / pixelsPerMillimeter;
+      const y = (event.clientY - bounds.top - activeDrag.pointerOffsetY) / pixelsPerMillimeter;
       const movingGear = project.gears.find((gear) => gear.id === activeDrag.gearId);
 
       if (!movingGear) {
@@ -161,7 +172,7 @@ export function CanvasStage({
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [dragState, onMoveGear, project.gears]);
+  }, [dragState, onMoveGear, pixelsPerMillimeter, project.gears]);
 
   const relationLines = project.relations
     .map((relation) => {
@@ -174,10 +185,10 @@ export function CanvasStage({
 
       return {
         id: `${relation.driverGearId}-${relation.drivenGearId}`,
-        x1: driver.position.x * PIXELS_PER_MILLIMETER,
-        y1: driver.position.y * PIXELS_PER_MILLIMETER,
-        x2: driven.position.x * PIXELS_PER_MILLIMETER,
-        y2: driven.position.y * PIXELS_PER_MILLIMETER,
+        x1: driver.position.x * pixelsPerMillimeter,
+        y1: driver.position.y * pixelsPerMillimeter,
+        x2: driven.position.x * pixelsPerMillimeter,
+        y2: driven.position.y * pixelsPerMillimeter,
       };
     })
     .filter((relation): relation is NonNullable<typeof relation> => relation !== null);
@@ -194,12 +205,12 @@ export function CanvasStage({
     }
 
     return {
-      x1: snappedToGear.position.x * PIXELS_PER_MILLIMETER,
-      y1: snappedToGear.position.y * PIXELS_PER_MILLIMETER,
-      x2: dragPreview.previewPosition.x * PIXELS_PER_MILLIMETER,
-      y2: dragPreview.previewPosition.y * PIXELS_PER_MILLIMETER,
+      x1: snappedToGear.position.x * pixelsPerMillimeter,
+      y1: snappedToGear.position.y * pixelsPerMillimeter,
+      x2: dragPreview.previewPosition.x * pixelsPerMillimeter,
+      y2: dragPreview.previewPosition.y * pixelsPerMillimeter,
     };
-  }, [dragPreview, project.gears]);
+  }, [dragPreview, pixelsPerMillimeter, project.gears]);
 
   return (
     <Paper
@@ -214,48 +225,75 @@ export function CanvasStage({
       }}
     >
       <Stack gap="lg" h="100%">
-        <div>
-          <Title order={3}>Design canvas</Title>
-          <Text c="dimmed" size="sm">
-            Drag gears directly. Adding a matching gear or dragging near another compatible gear
-            will snap it into mesh distance. The canvas expands with the available workspace.
-          </Text>
-        </div>
+        <Group justify="space-between" align="flex-start">
+          <div>
+            <Title order={3}>Design canvas</Title>
+            <Text c="dimmed" size="sm">
+              Drag gears directly. Adding a matching gear or dragging near another compatible gear
+              will snap it into mesh distance. The canvas expands with the available workspace.
+            </Text>
+          </div>
+          <Group gap="xs" align="center">
+            <ActionIcon
+              variant="light"
+              aria-label="Zoom out"
+              onClick={() => changeZoom(-ZOOM_STEP)}
+              disabled={zoom <= MIN_ZOOM}
+            >
+              -
+            </ActionIcon>
+            <Text size="sm" miw={64} ta="center">
+              Zoom {Math.round(zoom * 100)}%
+            </Text>
+            <ActionIcon
+              variant="light"
+              aria-label="Zoom in"
+              onClick={() => changeZoom(ZOOM_STEP)}
+              disabled={zoom >= MAX_ZOOM}
+            >
+              +
+            </ActionIcon>
+          </Group>
+        </Group>
 
         <div
           ref={canvasRef}
           style={{
             position: 'relative',
             width: '100%',
-            minHeight: CANVAS_MIN_HEIGHT_MM * PIXELS_PER_MILLIMETER,
+            minHeight: CANVAS_MIN_HEIGHT_MM * pixelsPerMillimeter,
             height: '100%',
             flex: 1,
+            overflow: 'auto',
             borderRadius: 18,
             background:
               'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(245,240,232,0.95) 100%)',
             border: '1px dashed rgba(24, 32, 40, 0.18)',
-            overflow: 'hidden',
           }}
         >
           <svg
             aria-hidden="true"
             width="100%"
             height="100%"
+            viewBox={`0 0 ${180 * pixelsPerMillimeter} ${120 * pixelsPerMillimeter}`}
+            preserveAspectRatio="xMinYMin meet"
             style={{
               position: 'absolute',
               inset: 0,
+              minWidth: 180 * pixelsPerMillimeter,
+              minHeight: 120 * pixelsPerMillimeter,
               pointerEvents: 'none',
             }}
           >
             <defs>
               <pattern
                 id="canvas-grid"
-                width={PIXELS_PER_MILLIMETER * 10}
-                height={PIXELS_PER_MILLIMETER * 10}
+                width={pixelsPerMillimeter * 10}
+                height={pixelsPerMillimeter * 10}
                 patternUnits="userSpaceOnUse"
               >
                 <path
-                  d={`M ${PIXELS_PER_MILLIMETER * 10} 0 L 0 0 0 ${PIXELS_PER_MILLIMETER * 10}`}
+                  d={`M ${pixelsPerMillimeter * 10} 0 L 0 0 0 ${pixelsPerMillimeter * 10}`}
                   fill="none"
                   stroke="rgba(24, 32, 40, 0.05)"
                   strokeWidth="1"
