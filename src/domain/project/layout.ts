@@ -1,10 +1,12 @@
 import { calculateCenterDistance, canMeshSpurGears } from '../gears/calculations';
+import { calculateDrivenRotationDegrees, createLockedMeshRelation } from './meshing';
 import type { CanvasPosition, GearMeshRelation, ProjectGear } from './types';
 
 export type SnapResult = {
   position: CanvasPosition;
   relation: GearMeshRelation | null;
   snappedToGearId: string | null;
+  rotationDegrees: number | null;
 };
 
 function calculateDistance(a: CanvasPosition, b: CanvasPosition): number {
@@ -33,6 +35,7 @@ export function snapGearPosition(
     position: nextPosition,
     relation: null,
     snappedToGearId: null,
+    rotationDegrees: null,
   };
   let bestDistanceDelta = Number.POSITIVE_INFINITY;
 
@@ -54,18 +57,25 @@ export function snapGearPosition(
 
     const direction = normalize(dx, dy);
 
-    bestDistanceDelta = distanceDelta;
-    bestResult = {
+    const positionedMovingGear = {
+      ...movingGear,
       position: {
         x: candidate.position.x + direction.x * expectedCenterDistance,
         y: candidate.position.y + direction.y * expectedCenterDistance,
       },
-      relation: {
-        driverGearId: candidate.id,
-        drivenGearId: movingGear.id,
-        centerDistanceLocked: true,
-      },
+    };
+    const relation = createLockedMeshRelation(candidate, positionedMovingGear);
+
+    bestDistanceDelta = distanceDelta;
+    bestResult = {
+      position: positionedMovingGear.position,
+      relation,
       snappedToGearId: candidate.id,
+      rotationDegrees: calculateDrivenRotationDegrees(
+        candidate,
+        positionedMovingGear,
+        relation.meshPhaseOffsetDegrees,
+      ),
     };
   }
 

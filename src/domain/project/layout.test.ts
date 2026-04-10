@@ -1,6 +1,7 @@
 import { calculateCenterDistance } from '../gears/calculations';
 import { createSpurGear } from '../gears/factories';
 import { snapGearPosition } from './layout';
+import { calculateDrivenRotationDegrees } from './meshing';
 import type { ProjectGear } from './types';
 
 function createProjectGear(
@@ -36,10 +37,24 @@ describe('project layout snapping', () => {
       result.position.x - stationary.position.x,
       result.position.y - stationary.position.y,
     );
+    const relation = result.relation;
+
+    if (!relation || result.rotationDegrees === null) {
+      throw new Error('Expected a locked relation and aligned rotation after snapping');
+    }
 
     expect(result.snappedToGearId).toBe('driver');
     expect(snappedDistance).toBeCloseTo(calculateCenterDistance(stationary, moving), 4);
-    expect(result.relation?.centerDistanceLocked).toBe(true);
+    expect(relation.centerDistanceLocked).toBe(true);
+    expect(relation.meshPhaseOffsetDegrees).toBeDefined();
+    expect(result.rotationDegrees).toBeCloseTo(
+      calculateDrivenRotationDegrees(
+        stationary,
+        { ...moving, position: result.position },
+        relation.meshPhaseOffsetDegrees,
+      ),
+      4,
+    );
   });
 
   it('does not snap incompatible gears', () => {

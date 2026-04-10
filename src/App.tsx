@@ -122,6 +122,9 @@ export function App() {
           project={state.project}
           selectedGearId={state.selectedGearId}
           onRemoveGear={(gearId) => dispatch({ type: 'remove-gear', gearId })}
+          onRotateGear={(gearId, rotationDegrees) =>
+            dispatch({ type: 'rotate-gear', gearId, rotationDegrees })
+          }
           onUpdateGear={(gearId, patch) => dispatch({ type: 'update-gear', gearId, patch })}
         />
       </AppShell.Aside>

@@ -71,6 +71,20 @@ describe('App', () => {
     expect(screen.getByText('Teeth: 28')).toBeDefined();
   });
 
+  it('lets the user rotate a gear from the inspector', () => {
+    render(
+      <MantineProvider theme={theme}>
+        <App />
+      </MantineProvider>,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Rotation (degrees)' }), {
+      target: { value: '18' },
+    });
+
+    expect(screen.getAllByText('Rotation: 18.0°').length).toBeGreaterThan(0);
+  });
+
   it('exports the selected gear as an SVG document', () => {
     Object.defineProperty(URL, 'createObjectURL', {
       writable: true,

@@ -1,6 +1,11 @@
 import { calculateCenterDistance } from '../gears/calculations';
 import { createSpurGear } from '../gears/factories';
 import type { GearMeshRelation, GearProject, ProjectGear } from './types';
+import {
+  calculateDrivenRotationDegrees,
+  calculateLinkedRotationDegrees,
+  createLockedMeshRelation,
+} from './meshing';
 import { snapGearPosition } from './layout';
 
 export type ProjectEditorState = {
@@ -65,6 +70,10 @@ function getGearById(gears: ProjectGear[], gearId: string): ProjectGear {
   }
 
   return gear;
+}
+
+function replaceGear(gears: ProjectGear[], updatedGear: ProjectGear): ProjectGear[] {
+  return gears.map((gear) => (gear.id === updatedGear.id ? updatedGear : gear));
 }
 
 function createProjectGear(
@@ -139,12 +148,66 @@ function rebuildProjectGear(
   };
 }
 
-function repositionLockedRelations(
+function propagateRotationsThroughRelations(
+  gears: ProjectGear[],
+  relations: GearMeshRelation[],
+  sourceGearId: string,
+  rotationDegrees: number,
+): ProjectGear[] {
+  let nextGears = gears.map((gear) =>
+    gear.id === sourceGearId ? { ...gear, rotationDegrees } : gear,
+  );
+  const queue = [sourceGearId];
+  const visited = new Set<string>([sourceGearId]);
+
+  while (queue.length > 0) {
+    const currentGearId = queue.shift();
+
+    if (!currentGearId) {
+      continue;
+    }
+
+    const currentGear = getGearById(nextGears, currentGearId);
+    const linkedRelations = relations.filter(
+      (relation) =>
+        relation.centerDistanceLocked &&
+        (relation.driverGearId === currentGearId || relation.drivenGearId === currentGearId),
+    );
+
+    for (const relation of linkedRelations) {
+      const otherGearId =
+        relation.driverGearId === currentGearId ? relation.drivenGearId : relation.driverGearId;
+
+      if (visited.has(otherGearId)) {
+        continue;
+      }
+
+      const otherGear = getGearById(nextGears, otherGearId);
+      const linkedRotationDegrees = calculateLinkedRotationDegrees(
+        currentGear,
+        otherGear,
+        relation,
+        currentGear.rotationDegrees,
+      );
+
+      nextGears = nextGears.map((gear) =>
+        gear.id === otherGearId ? { ...gear, rotationDegrees: linkedRotationDegrees } : gear,
+      );
+      visited.add(otherGearId);
+      queue.push(otherGearId);
+    }
+  }
+
+  return nextGears;
+}
+
+function syncLockedRelations(
   gears: ProjectGear[],
   relations: GearMeshRelation[],
   updatedGearId: string,
-): ProjectGear[] {
+): { gears: ProjectGear[]; relations: GearMeshRelation[] } {
   let nextGears = [...gears];
+  let nextRelations = [...relations];
 
   for (const relation of relations) {
     const isDriver = relation.driverGearId === updatedGearId;
@@ -168,20 +231,35 @@ function repositionLockedRelations(
     const direction = { x: dx / magnitude, y: dy / magnitude };
     const lockedDistance = calculateCenterDistance(updatedGear, counterpart);
 
-    nextGears = nextGears.map((gear) =>
-      gear.id === counterpartId
-        ? {
-            ...gear,
-            position: {
-              x: updatedGear.position.x + direction.x * lockedDistance,
-              y: updatedGear.position.y + direction.y * lockedDistance,
-            },
-          }
-        : gear,
+    const positionedCounterpart = {
+      ...counterpart,
+      position: {
+        x: updatedGear.position.x + direction.x * lockedDistance,
+        y: updatedGear.position.y + direction.y * lockedDistance,
+      },
+    };
+    const driverGear = isDriver ? updatedGear : positionedCounterpart;
+    const drivenGear = isDriver ? positionedCounterpart : updatedGear;
+    const nextRelation = createLockedMeshRelation(driverGear, drivenGear);
+    const alignedDrivenGear = {
+      ...drivenGear,
+      rotationDegrees: calculateDrivenRotationDegrees(
+        driverGear,
+        drivenGear,
+        nextRelation.meshPhaseOffsetDegrees,
+      ),
+    };
+
+    nextGears = replaceGear(nextGears, driverGear);
+    nextGears = replaceGear(nextGears, alignedDrivenGear);
+    nextRelations = nextRelations.map((entry) =>
+      entry.driverGearId === relation.driverGearId && entry.drivenGearId === relation.drivenGearId
+        ? nextRelation
+        : entry,
     );
   }
 
-  return nextGears;
+  return { gears: nextGears, relations: nextRelations };
 }
 
 export function createInitialEditorState(project: GearProject): ProjectEditorState {
@@ -222,21 +300,24 @@ export function projectReducer(
         x: sourceGear.position.x + dx,
         y: sourceGear.position.y,
       };
-      const { position, relation } = snapGearPosition(
+      const snapResult = snapGearPosition(
         nextGear,
         snappedPosition,
         state.project.gears,
       );
       const nextPlacedGear = {
         ...nextGear,
-        position,
+        position: snapResult.position,
+        rotationDegrees: snapResult.rotationDegrees ?? nextGear.rotationDegrees,
       };
 
       return {
         project: {
           ...state.project,
           gears: [...state.project.gears, nextPlacedGear],
-          relations: relation ? [...state.project.relations, relation] : state.project.relations,
+          relations: snapResult.relation
+            ? [...state.project.relations, snapResult.relation]
+            : state.project.relations,
         },
         selectedGearId: nextPlacedGear.id,
       };
@@ -267,12 +348,14 @@ export function projectReducer(
       const nextGears = state.project.gears.map((gear) =>
         gear.id === action.gearId ? rebuildProjectGear(gear, action.patch) : gear,
       );
+      const syncedProject = syncLockedRelations(nextGears, state.project.relations, action.gearId);
 
       return {
         ...state,
         project: {
           ...state.project,
-          gears: repositionLockedRelations(nextGears, state.project.relations, action.gearId),
+          gears: syncedProject.gears,
+          relations: syncedProject.relations,
         },
       };
     }
@@ -286,15 +369,22 @@ export function projectReducer(
         otherGears,
       );
       const nextGears = state.project.gears.map((gear) =>
-        gear.id === action.gearId ? { ...gear, position: snapResult.position } : gear,
+        gear.id === action.gearId
+          ? {
+              ...gear,
+              position: snapResult.position,
+              rotationDegrees: snapResult.rotationDegrees ?? gear.rotationDegrees,
+            }
+          : gear,
       );
+      const nextRelations = updateRelations(state.project.relations, action.gearId, snapResult.relation);
 
       return {
         ...state,
         project: {
           ...state.project,
           gears: nextGears,
-          relations: updateRelations(state.project.relations, action.gearId, snapResult.relation),
+          relations: nextRelations,
         },
       };
     }
@@ -304,8 +394,11 @@ export function projectReducer(
         ...state,
         project: {
           ...state.project,
-          gears: state.project.gears.map((gear) =>
-            gear.id === action.gearId ? { ...gear, rotationDegrees: action.rotationDegrees } : gear,
+          gears: propagateRotationsThroughRelations(
+            state.project.gears,
+            state.project.relations,
+            action.gearId,
+            action.rotationDegrees,
           ),
         },
       };

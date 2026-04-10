@@ -1,5 +1,6 @@
 import { calculateCenterDistance } from '../gears/calculations';
 import { createSampleProject } from './sampleProject';
+import { calculateLinkedRotationDegrees } from './meshing';
 import { createInitialEditorState, projectReducer } from './state';
 
 describe('project reducer', () => {
@@ -23,6 +24,7 @@ describe('project reducer', () => {
     expect(nextState.project.gears).toHaveLength(3);
     expect(nextState.project.relations).toHaveLength(2);
     expect(nextState.project.relations[1]?.drivenGearId).toBe('gear-3');
+    expect(nextState.project.relations[1]?.meshPhaseOffsetDegrees).toBeDefined();
   });
 
   it('snaps a moved gear into mesh distance with a compatible gear', () => {
@@ -84,5 +86,32 @@ describe('project reducer', () => {
         driverGear.position.y - drivenGear.position.y,
       ),
     ).toBeCloseTo(calculateCenterDistance(driverGear, drivenGear), 4);
+  });
+
+  it('rotates a selected gear and propagates the linked rotation to its mate', () => {
+    const state = createInitialEditorState(createSampleProject());
+    const relation = state.project.relations[0];
+
+    if (!relation) {
+      throw new Error('Expected a sample relation');
+    }
+
+    const nextState = projectReducer(state, {
+      type: 'rotate-gear',
+      gearId: 'gear-driver',
+      rotationDegrees: 18,
+    });
+    const driverGear = nextState.project.gears.find((gear) => gear.id === 'gear-driver');
+    const drivenGear = nextState.project.gears.find((gear) => gear.id === 'gear-driven');
+
+    if (!driverGear || !drivenGear) {
+      throw new Error('Expected rotated gears to exist');
+    }
+
+    expect(driverGear.rotationDegrees).toBe(18);
+    expect(drivenGear.rotationDegrees).toBeCloseTo(
+      calculateLinkedRotationDegrees(driverGear, drivenGear, relation, 18),
+      4,
+    );
   });
 });

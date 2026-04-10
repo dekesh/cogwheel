@@ -1,4 +1,5 @@
 import { createSpurGear } from '../gears/factories';
+import { calculateDrivenRotationDegrees, createLockedMeshRelation } from './meshing';
 import type { GearProject } from './types';
 
 export function createSampleProject(): GearProject {
@@ -28,28 +29,33 @@ export function createSampleProject(): GearProject {
     backlashMm: 0.12,
   });
 
+  const driverGear = {
+    ...driver,
+    position: { x: 60, y: 60 },
+    rotationDegrees: 0,
+  };
+  const drivenGear = {
+    ...driven,
+    position: { x: 120, y: 60 },
+    rotationDegrees: 0,
+  };
+  const relation = createLockedMeshRelation(driverGear, drivenGear);
+
   return {
     id: 'project-sample',
     name: 'Starter gear train',
     gears: [
+      driverGear,
       {
-        ...driver,
-        position: { x: 60, y: 60 },
-        rotationDegrees: 0,
-      },
-      {
-        ...driven,
-        position: { x: 120, y: 60 },
-        rotationDegrees: 0,
-      },
-    ],
-    relations: [
-      {
-        driverGearId: 'gear-driver',
-        drivenGearId: 'gear-driven',
-        centerDistanceLocked: true,
+        ...drivenGear,
+        rotationDegrees: calculateDrivenRotationDegrees(
+          driverGear,
+          drivenGear,
+          relation.meshPhaseOffsetDegrees,
+        ),
       },
     ],
+    relations: [relation],
     printProfile: {
       material: 'PLA',
       nozzleDiameterMm: 0.4,

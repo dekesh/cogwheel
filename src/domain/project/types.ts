@@ -18,6 +18,7 @@ export type GearMeshRelation = {
   driverGearId: string;
   drivenGearId: string;
   centerDistanceLocked: boolean;
+  meshPhaseOffsetDegrees: number;
 };
 
 export type ProjectGear = SpurGear & {

@@ -6,8 +6,7 @@ import { snapGearPosition } from '../domain/project/layout';
 import type { GearProject } from '../domain/project/types';
 
 const PIXELS_PER_MILLIMETER = 4;
-const CANVAS_WIDTH_MM = 180;
-const CANVAS_HEIGHT_MM = 120;
+const CANVAS_MIN_HEIGHT_MM = 120;
 const MINIMUM_GEAR_PREVIEW_SIZE = 72;
 const PREVIEW_MARGIN_MM = 4;
 
@@ -103,6 +102,9 @@ export function CanvasStage({
           </Text>
           <Text size="xs" c="dimmed">
             Center: ({gear.position.x.toFixed(1)}, {gear.position.y.toFixed(1)}) mm
+          </Text>
+          <Text size="xs" c="dimmed">
+            Rotation: {gear.rotationDegrees.toFixed(1)}°
           </Text>
         </Stack>
       </div>
@@ -216,7 +218,7 @@ export function CanvasStage({
           <Title order={3}>Design canvas</Title>
           <Text c="dimmed" size="sm">
             Drag gears directly. Adding a matching gear or dragging near another compatible gear
-            will snap it into mesh distance.
+            will snap it into mesh distance. The canvas expands with the available workspace.
           </Text>
         </div>
 
@@ -224,8 +226,10 @@ export function CanvasStage({
           ref={canvasRef}
           style={{
             position: 'relative',
-            width: CANVAS_WIDTH_MM * PIXELS_PER_MILLIMETER,
-            height: CANVAS_HEIGHT_MM * PIXELS_PER_MILLIMETER,
+            width: '100%',
+            minHeight: CANVAS_MIN_HEIGHT_MM * PIXELS_PER_MILLIMETER,
+            height: '100%',
+            flex: 1,
             borderRadius: 18,
             background:
               'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(245,240,232,0.95) 100%)',
@@ -235,8 +239,8 @@ export function CanvasStage({
         >
           <svg
             aria-hidden="true"
-            width={CANVAS_WIDTH_MM * PIXELS_PER_MILLIMETER}
-            height={CANVAS_HEIGHT_MM * PIXELS_PER_MILLIMETER}
+            width="100%"
+            height="100%"
             style={{
               position: 'absolute',
               inset: 0,
@@ -259,8 +263,8 @@ export function CanvasStage({
               </pattern>
             </defs>
             <rect
-              width={CANVAS_WIDTH_MM * PIXELS_PER_MILLIMETER}
-              height={CANVAS_HEIGHT_MM * PIXELS_PER_MILLIMETER}
+              width="100%"
+              height="100%"
               fill="url(#canvas-grid)"
             />
             {relationLines.map((relation) => (

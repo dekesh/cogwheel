@@ -71,6 +71,12 @@ This file tracks what has been decided, what has been done, and what remains so 
   - locked relation repositioning when edited geometry changes center distance
   - drag-time snap indicator overlay
   - tests for reducer updates and browser editing flow
+- Improved meshing and manual rotation behavior:
+  - locked gear relations now store phase data instead of only center-distance locks
+  - newly snapped or matched gears align their tooth phase instead of only sharing the correct center distance
+  - inspector now exposes manual rotation in degrees
+  - manual rotation propagates through locked relations using tooth-count ratio math, which is intended to be reused for future animation
+  - canvas grows with the available workspace instead of staying at a small fixed size
 - Implemented SVG document export:
   - selected-gear SVG generation
   - full-layout SVG generation

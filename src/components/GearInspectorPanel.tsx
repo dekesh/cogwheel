@@ -17,6 +17,7 @@ type GearInspectorPanelProps = {
   project: GearProject;
   selectedGearId: string | null;
   onRemoveGear: (gearId: string) => void;
+  onRotateGear: (gearId: string, rotationDegrees: number) => void;
   onUpdateGear: (
     gearId: string,
     patch: Partial<
@@ -40,6 +41,7 @@ export function GearInspectorPanel({
   project,
   selectedGearId,
   onRemoveGear,
+  onRotateGear,
   onUpdateGear,
 }: GearInspectorPanelProps) {
   const selectedGear =
@@ -81,6 +83,7 @@ export function GearInspectorPanel({
         <Text size="sm">Pressure angle: {selectedGear.pressureAngleDegrees}°</Text>
         <Text size="sm">Thickness: {selectedGear.thicknessMm.toFixed(2)} mm</Text>
         <Text size="sm">Backlash: {selectedGear.backlashMm.toFixed(2)} mm</Text>
+        <Text size="sm">Rotation: {selectedGear.rotationDegrees.toFixed(1)}°</Text>
         <Text size="sm">Base diameter: {selectedGear.geometry.baseDiameterMm.toFixed(2)} mm</Text>
         <Text size="sm">
           Axle gap to rim:{' '}
@@ -178,6 +181,17 @@ export function GearInspectorPanel({
           onChange={(value) => {
             if (typeof value === 'number') {
               onUpdateGear(selectedGear.id, { innerCutoutDiameterMm: value });
+            }
+          }}
+        />
+        <NumberInput
+          label="Rotation (degrees)"
+          step={1}
+          decimalScale={1}
+          value={selectedGear.rotationDegrees}
+          onChange={(value) => {
+            if (typeof value === 'number') {
+              onRotateGear(selectedGear.id, value);
             }
           }}
         />
