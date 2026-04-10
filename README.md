@@ -7,7 +7,7 @@ Cogwheel Designer is a TypeScript web app for designing 3D-printable spur gears 
 - The current UI supports adding gears, removing gears, selecting gears, dragging gears on a canvas, and adding matching gears that snap into valid mesh distance.
 - The inspector now supports live editing of core gear parameters with immediate geometry recomputation.
 - Derived spur-gear dimensions, sampled involute-style SVG outlines, meshing helpers, drag/snap state, snap feedback, and advisory validation warnings are implemented and tested.
-- Export buttons now generate selected-gear and layout SVG documents, with optional metadata and optional axle-hole inclusion.
+- Export buttons now generate selected-gear and layout SVG documents, with optional metadata, optional axle-hole inclusion, and either contour or filled-inside geometry output.
 - Gears now expose an inner cutout diameter parameter to control the empty center between the shaft area and the toothed rim.
 - Autosave is still ahead.
 

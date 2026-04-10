@@ -78,6 +78,10 @@ This file tracks what has been decided, what has been done, and what remains so 
   - optional axle-hole inclusion/exclusion
   - sidebar export actions
   - tests for document generation and download wiring
+- Extended SVG export output modes:
+  - contour mode preserves the current stroked-path export behavior
+  - inside mode exports filled geometry with even-odd cutouts for programs that expect solid interiors
+  - sidebar now lets the user choose the export geometry mode before exporting
 - Corrected a visual snap/readability issue:
   - canvas gears now render at size proportional to their real millimeter diameter instead of using one fixed preview size
 - Clarified center/shaft handling:

@@ -1,5 +1,16 @@
-import { Badge, Button, Checkbox, Divider, NumberInput, Stack, Text, Title } from '@mantine/core';
+import {
+  Badge,
+  Button,
+  Checkbox,
+  Divider,
+  NumberInput,
+  SegmentedControl,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 
+import type { SvgExportMode } from '../domain/export/svgDocument';
 import type { GearProject } from '../domain/project/types';
 
 type ProjectSidebarProps = {
@@ -16,6 +27,8 @@ type ProjectSidebarProps = {
   onToggleIncludeShaftPieceInExport: (value: boolean) => void;
   shaftClearanceMm: number;
   onChangeShaftClearanceMm: (value: number) => void;
+  exportMode: SvgExportMode;
+  onChangeExportMode: (value: SvgExportMode) => void;
   onExportSelectedGear: () => void;
   onExportLayout: () => void;
 };
@@ -34,6 +47,8 @@ export function ProjectSidebar({
   onToggleIncludeShaftPieceInExport,
   shaftClearanceMm,
   onChangeShaftClearanceMm,
+  exportMode,
+  onChangeExportMode,
   onExportSelectedGear,
   onExportLayout,
 }: ProjectSidebarProps) {
@@ -56,6 +71,20 @@ export function ProjectSidebar({
       <Button onClick={onExportLayout} variant="light" disabled={project.gears.length === 0}>
         Export layout SVG
       </Button>
+      <div>
+        <Text size="sm" fw={500} mb={6}>
+          Export geometry
+        </Text>
+        <SegmentedControl
+          fullWidth
+          value={exportMode}
+          onChange={(value) => onChangeExportMode(value as SvgExportMode)}
+          data={[
+            { label: 'Contour', value: 'contour' },
+            { label: 'Inside', value: 'inside' },
+          ]}
+        />
+      </div>
       <Checkbox
         label="Include export metadata"
         checked={includeMetadataInExport}

@@ -5,6 +5,16 @@ import { vi } from 'vitest';
 import { App } from './App';
 import { theme } from './theme';
 
+function readBlobAsText(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsText(blob);
+  });
+}
+
 describe('App', () => {
   it('renders the initial workspace shell', () => {
     render(
@@ -89,5 +99,42 @@ describe('App', () => {
     createObjectUrlMock.mockRestore();
     revokeObjectUrlMock.mockRestore();
     clickSpy.mockRestore();
+  });
+
+  it('switches the SVG export to inside geometry', async () => {
+    Object.defineProperty(URL, 'createObjectURL', {
+      writable: true,
+      value: () => 'blob:gear',
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      writable: true,
+      value: () => undefined,
+    });
+
+    const createObjectUrlMock = vi.spyOn(URL, 'createObjectURL').mockImplementation((object) => {
+      expect(object).toBeInstanceOf(Blob);
+      return 'blob:gear';
+    });
+    const revokeObjectUrlMock = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+    render(
+      <MantineProvider theme={theme}>
+        <App />
+      </MantineProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Inside' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Export selected SVG' }));
+
+    const exportedBlob = createObjectUrlMock.mock.calls[0]?.[0] as Blob;
+    const exportedSvg = await readBlobAsText(exportedBlob);
+
+    expect(exportedBlob.type).toBe('image/svg+xml');
+    expect(exportedSvg).toContain('fill-rule="evenodd"');
+    expect(exportedSvg).toContain('stroke="none"');
+    clickSpy.mockRestore();
+    revokeObjectUrlMock.mockRestore();
+    createObjectUrlMock.mockRestore();
   });
 });

@@ -1,12 +1,15 @@
 import { buildSpurGearPath } from '../gears/svg';
 import type { GearProject, ProjectGear } from '../project/types';
 
+export type SvgExportMode = 'contour' | 'inside';
+
 type SvgDocumentOptions = {
   includeMetadata?: boolean;
   marginMm?: number;
   includeAxleHole?: boolean;
   includeShaftPiece?: boolean;
   shaftClearanceMm?: number;
+  exportMode?: SvgExportMode;
 };
 
 function escapeXml(value: string): string {
@@ -30,6 +33,10 @@ function buildStrokePath(path: string): string {
   return `<path d="${path}" fill="none" stroke="#182028" stroke-width="0.5" vector-effect="non-scaling-stroke" />`;
 }
 
+function buildFilledPath(path: string): string {
+  return `<path d="${path}" fill="#182028" fill-rule="evenodd" stroke="none" />`;
+}
+
 function buildGearPaths(gear: ProjectGear, includeAxleHole: boolean): string[] {
   const { outerPath, innerCutoutPath, axleHolePath } = buildSpurGearPath(gear);
 
@@ -38,6 +45,10 @@ function buildGearPaths(gear: ProjectGear, includeAxleHole: boolean): string[] {
     innerCutoutPath,
     includeAxleHole ? axleHolePath : null,
   ].filter((path): path is string => Boolean(path));
+}
+
+function buildCombinedGearPath(gear: ProjectGear, includeAxleHole: boolean): string {
+  return buildGearPaths(gear, includeAxleHole).join(' ');
 }
 
 function buildShaftPiecePath(gear: ProjectGear, shaftClearanceMm: number): string | null {
@@ -62,15 +73,16 @@ function buildGearGroup(
   includeAxleHole: boolean,
   includeShaftPiece: boolean,
   shaftClearanceMm: number,
+  exportMode: SvgExportMode,
 ): string {
-  const gearPaths = buildGearPaths(gear, includeAxleHole);
+  const gearPath = buildCombinedGearPath(gear, includeAxleHole);
   const shaftPath = includeShaftPiece ? buildShaftPiecePath(gear, shaftClearanceMm) : null;
   const rotation = gear.rotationDegrees === 0 ? '' : ` rotate(${formatNumber(-gear.rotationDegrees)})`;
 
   return [
     `<g transform="translate(${formatNumber(gear.position.x)} ${formatNumber(-gear.position.y)})${rotation}">`,
-    ...gearPaths.map((path) => buildStrokePath(path)),
-    shaftPath ? buildStrokePath(shaftPath) : '',
+    exportMode === 'inside' ? buildFilledPath(gearPath) : buildStrokePath(gearPath),
+    shaftPath ? (exportMode === 'inside' ? buildFilledPath(shaftPath) : buildStrokePath(shaftPath)) : '',
     '</g>',
   ]
     .filter(Boolean)
@@ -86,6 +98,7 @@ function buildSingleGearSvg(
   const includeAxleHole = options.includeAxleHole ?? true;
   const includeShaftPiece = options.includeShaftPiece ?? false;
   const shaftClearanceMm = options.shaftClearanceMm ?? 0.2;
+  const exportMode = options.exportMode ?? 'contour';
   const minY = -outerRadiusMm - marginMm;
   const maxY = outerRadiusMm + marginMm;
   const viewBoxX = -outerRadiusMm - marginMm;
@@ -106,22 +119,25 @@ function buildSingleGearSvg(
             innerCutoutDiameterMm: gear.innerCutoutDiameterMm,
             thicknessMm: gear.thicknessMm,
             shaftClearanceMm,
+            exportMode,
           },
         }),
       )
     : '';
-  const gearPaths = [
+  const gearPath = [
     outerPath,
     innerCutoutPath,
     includeAxleHole ? axleHolePath : null,
-  ].filter((path): path is string => Boolean(path));
+  ]
+    .filter((path): path is string => Boolean(path))
+    .join(' ');
   const shaftPath = includeShaftPiece ? buildShaftPiecePath(gear, shaftClearanceMm) : null;
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${formatNumber(viewBoxX)} ${formatNumber(viewBoxY)} ${formatNumber(viewBoxWidth)} ${formatNumber(viewBoxHeight)}" width="${formatNumber(viewBoxWidth)}mm" height="${formatNumber(viewBoxHeight)}mm">`,
     metadata,
-    ...gearPaths.map((path) => buildStrokePath(path)),
-    shaftPath ? buildStrokePath(shaftPath) : '',
+    exportMode === 'inside' ? buildFilledPath(gearPath) : buildStrokePath(gearPath),
+    shaftPath ? (exportMode === 'inside' ? buildFilledPath(shaftPath) : buildStrokePath(shaftPath)) : '',
     '</svg>',
   ]
     .filter(Boolean)
@@ -158,6 +174,7 @@ function buildLayoutSvg(project: GearProject, options: SvgDocumentOptions = {}):
   const includeAxleHole = options.includeAxleHole ?? true;
   const includeShaftPiece = options.includeShaftPiece ?? false;
   const shaftClearanceMm = options.shaftClearanceMm ?? 0.2;
+  const exportMode = options.exportMode ?? 'contour';
   const bounds = calculateProjectBounds(project, marginMm);
   const metadata = options.includeMetadata
     ? buildMetadataBlock(
@@ -168,6 +185,7 @@ function buildLayoutSvg(project: GearProject, options: SvgDocumentOptions = {}):
           gearCount: project.gears.length,
           relationCount: project.relations.length,
           shaftClearanceMm,
+          exportMode,
         }),
       )
     : '';
@@ -176,7 +194,7 @@ function buildLayoutSvg(project: GearProject, options: SvgDocumentOptions = {}):
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${formatNumber(bounds.minX)} ${formatNumber(bounds.minY)} ${formatNumber(bounds.width)} ${formatNumber(bounds.height)}" width="${formatNumber(bounds.width)}mm" height="${formatNumber(bounds.height)}mm">`,
     metadata,
     ...project.gears.map((gear) =>
-      buildGearGroup(gear, includeAxleHole, includeShaftPiece, shaftClearanceMm),
+      buildGearGroup(gear, includeAxleHole, includeShaftPiece, shaftClearanceMm, exportMode),
     ),
     '</svg>',
   ].join('');

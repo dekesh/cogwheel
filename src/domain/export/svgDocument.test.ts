@@ -17,6 +17,19 @@ describe('SVG document export', () => {
     expect(svg).toContain('<path d="M ');
   });
 
+  it('can export filled inside geometry for programs that expect solid shapes', () => {
+    const project = createSampleProject();
+
+    const svg = buildSelectedGearSvgDocument(project, 'gear-driver', {
+      exportMode: 'inside',
+    });
+
+    expect(svg).toContain('fill="#182028"');
+    expect(svg).toContain('fill-rule="evenodd"');
+    expect(svg).toContain('stroke="none"');
+    expect(svg).not.toContain('fill="none"');
+  });
+
   it('builds a layout SVG document containing multiple translated gears', () => {
     const project = createSampleProject();
 
@@ -52,6 +65,17 @@ describe('SVG document export', () => {
     expect(svg).toContain('shaftClearanceMm');
     expect(svg).toContain('A 2.300 2.300');
     expect(svg).not.toContain('<g transform="translate(0 ');
+  });
+
+  it('records the export mode in metadata when requested', () => {
+    const project = createSampleProject();
+
+    const svg = buildLayoutSvgDocument(project, {
+      includeMetadata: true,
+      exportMode: 'inside',
+    });
+
+    expect(svg).toContain('&quot;exportMode&quot;:&quot;inside&quot;');
   });
 
   it('keeps the inner cutout contour when only the axle hole is excluded', () => {

@@ -4,7 +4,11 @@ import { AppShell, Group, Stack, Text, Title } from '@mantine/core';
 import { CanvasStage } from './components/CanvasStage';
 import { GearInspectorPanel } from './components/GearInspectorPanel';
 import { ProjectSidebar } from './components/ProjectSidebar';
-import { buildLayoutSvgDocument, buildSelectedGearSvgDocument } from './domain/export/svgDocument';
+import {
+  buildLayoutSvgDocument,
+  buildSelectedGearSvgDocument,
+  type SvgExportMode,
+} from './domain/export/svgDocument';
 import { createSampleProject } from './domain/project/sampleProject';
 import { createInitialEditorState, projectReducer } from './domain/project/state';
 import { downloadTextFile } from './utils/download';
@@ -17,6 +21,7 @@ export function App() {
   const [includeAxleHoleInExport, setIncludeAxleHoleInExport] = useState(true);
   const [includeShaftPieceInExport, setIncludeShaftPieceInExport] = useState(false);
   const [shaftClearanceMm, setShaftClearanceMm] = useState(0.2);
+  const [exportMode, setExportMode] = useState<SvgExportMode>('contour');
 
   function handleExportSelectedGear() {
     if (!state.selectedGearId) {
@@ -34,6 +39,7 @@ export function App() {
       includeAxleHole: includeAxleHoleInExport,
       includeShaftPiece: includeShaftPieceInExport,
       shaftClearanceMm,
+      exportMode,
     });
 
     downloadTextFile(`${selectedGear.label.replaceAll(/\s+/g, '-').toLowerCase()}.svg`, document, 'image/svg+xml');
@@ -45,6 +51,7 @@ export function App() {
       includeAxleHole: includeAxleHoleInExport,
       includeShaftPiece: includeShaftPieceInExport,
       shaftClearanceMm,
+      exportMode,
     });
 
     downloadTextFile(
@@ -94,6 +101,8 @@ export function App() {
           onToggleIncludeShaftPieceInExport={setIncludeShaftPieceInExport}
           shaftClearanceMm={shaftClearanceMm}
           onChangeShaftClearanceMm={setShaftClearanceMm}
+          exportMode={exportMode}
+          onChangeExportMode={setExportMode}
           onExportSelectedGear={handleExportSelectedGear}
           onExportLayout={handleExportLayout}
         />
