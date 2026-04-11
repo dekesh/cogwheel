@@ -6,6 +6,8 @@ import { snapGearPosition } from '../domain/project/layout';
 import type { GearProject } from '../domain/project/types';
 
 const PIXELS_PER_MILLIMETER = 4;
+const CANVAS_WIDTH_MM = 180;
+const CANVAS_HEIGHT_MM = 120;
 const CANVAS_MIN_HEIGHT_MM = 120;
 const MINIMUM_GEAR_PREVIEW_SIZE = 72;
 const PREVIEW_MARGIN_MM = 4;
@@ -43,6 +45,8 @@ export function CanvasStage({
   const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
   const [zoom, setZoom] = useState(1);
   const pixelsPerMillimeter = PIXELS_PER_MILLIMETER * zoom;
+  const contentWidthPx = CANVAS_WIDTH_MM * pixelsPerMillimeter;
+  const contentHeightPx = CANVAS_HEIGHT_MM * pixelsPerMillimeter;
 
   function changeZoom(delta: number) {
     setZoom((current) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number((current + delta).toFixed(2)))));
@@ -137,8 +141,14 @@ export function CanvasStage({
         return;
       }
 
-      const x = (event.clientX - bounds.left - activeDrag.pointerOffsetX) / pixelsPerMillimeter;
-      const y = (event.clientY - bounds.top - activeDrag.pointerOffsetY) / pixelsPerMillimeter;
+      const scrollLeft = canvasRef.current?.scrollLeft ?? 0;
+      const scrollTop = canvasRef.current?.scrollTop ?? 0;
+      const x =
+        (event.clientX - bounds.left + scrollLeft - activeDrag.pointerOffsetX) /
+        pixelsPerMillimeter;
+      const y =
+        (event.clientY - bounds.top + scrollTop - activeDrag.pointerOffsetY) /
+        pixelsPerMillimeter;
       const movingGear = project.gears.find((gear) => gear.id === activeDrag.gearId);
 
       if (!movingGear) {
@@ -261,7 +271,7 @@ export function CanvasStage({
           style={{
             position: 'relative',
             width: '100%',
-            minHeight: CANVAS_MIN_HEIGHT_MM * pixelsPerMillimeter,
+            minHeight: CANVAS_MIN_HEIGHT_MM * PIXELS_PER_MILLIMETER,
             height: '100%',
             flex: 1,
             overflow: 'auto',
@@ -271,75 +281,78 @@ export function CanvasStage({
             border: '1px dashed rgba(24, 32, 40, 0.18)',
           }}
         >
-          <svg
-            aria-hidden="true"
-            width="100%"
-            height="100%"
-            viewBox={`0 0 ${180 * pixelsPerMillimeter} ${120 * pixelsPerMillimeter}`}
-            preserveAspectRatio="xMinYMin meet"
+          <div
             style={{
               position: 'absolute',
               inset: 0,
-              minWidth: 180 * pixelsPerMillimeter,
-              minHeight: 120 * pixelsPerMillimeter,
-              pointerEvents: 'none',
+              minWidth: '100%',
+              minHeight: '100%',
+              width: contentWidthPx,
+              height: contentHeightPx,
             }}
           >
-            <defs>
-              <pattern
-                id="canvas-grid"
-                width={pixelsPerMillimeter * 10}
-                height={pixelsPerMillimeter * 10}
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d={`M ${pixelsPerMillimeter * 10} 0 L 0 0 0 ${pixelsPerMillimeter * 10}`}
-                  fill="none"
-                  stroke="rgba(24, 32, 40, 0.05)"
-                  strokeWidth="1"
-                />
-              </pattern>
-            </defs>
-            <rect
-              width="100%"
-              height="100%"
-              fill="url(#canvas-grid)"
-            />
-            {relationLines.map((relation) => (
-              <line
-                key={relation.id}
-                x1={relation.x1}
-                y1={relation.y1}
-                x2={relation.x2}
-                y2={relation.y2}
-                stroke="rgba(197, 107, 16, 0.35)"
-                strokeDasharray="8 6"
-                strokeWidth="2"
-              />
-            ))}
-            {snapIndicator ? (
-              <>
+            <svg
+              aria-hidden="true"
+              width={contentWidthPx}
+              height={contentHeightPx}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+              }}
+            >
+              <defs>
+                <pattern
+                  id="canvas-grid"
+                  width={pixelsPerMillimeter * 10}
+                  height={pixelsPerMillimeter * 10}
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d={`M ${pixelsPerMillimeter * 10} 0 L 0 0 0 ${pixelsPerMillimeter * 10}`}
+                    fill="none"
+                    stroke="rgba(24, 32, 40, 0.05)"
+                    strokeWidth="1"
+                  />
+                </pattern>
+              </defs>
+              <rect width={contentWidthPx} height={contentHeightPx} fill="url(#canvas-grid)" />
+              {relationLines.map((relation) => (
                 <line
-                  x1={snapIndicator.x1}
-                  y1={snapIndicator.y1}
-                  x2={snapIndicator.x2}
-                  y2={snapIndicator.y2}
-                  stroke="rgba(46, 160, 67, 0.75)"
-                  strokeWidth="3"
-                />
-                <circle
-                  cx={snapIndicator.x2}
-                  cy={snapIndicator.y2}
-                  r="7"
-                  fill="rgba(46, 160, 67, 0.18)"
-                  stroke="rgba(46, 160, 67, 0.85)"
+                  key={relation.id}
+                  x1={relation.x1}
+                  y1={relation.y1}
+                  x2={relation.x2}
+                  y2={relation.y2}
+                  stroke="rgba(197, 107, 16, 0.35)"
+                  strokeDasharray="8 6"
                   strokeWidth="2"
                 />
-              </>
-            ) : null}
-          </svg>
+              ))}
+              {snapIndicator ? (
+                <>
+                  <line
+                    x1={snapIndicator.x1}
+                    y1={snapIndicator.y1}
+                    x2={snapIndicator.x2}
+                    y2={snapIndicator.y2}
+                    stroke="rgba(46, 160, 67, 0.75)"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx={snapIndicator.x2}
+                    cy={snapIndicator.y2}
+                    r="7"
+                    fill="rgba(46, 160, 67, 0.18)"
+                    stroke="rgba(46, 160, 67, 0.85)"
+                    strokeWidth="2"
+                  />
+                </>
+              ) : null}
+            </svg>
 
-          {project.gears.map((gear) => renderGear(gear))}
+            {project.gears.map((gear) => renderGear(gear))}
+          </div>
         </div>
       </Stack>
     </Paper>
