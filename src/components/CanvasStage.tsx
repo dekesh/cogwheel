@@ -60,6 +60,7 @@ export function CanvasStage({
       MINIMUM_GEAR_PREVIEW_SIZE,
       previewDiameterMm * pixelsPerMillimeter,
     );
+    const haloSizePx = previewSizePx + 12;
 
     return (
       <div
@@ -80,21 +81,18 @@ export function CanvasStage({
           position: 'absolute',
           left: gear.position.x * pixelsPerMillimeter,
           top: gear.position.y * pixelsPerMillimeter,
-          width: previewSizePx + 28,
-          cursor: dragState?.gearId === gear.id ? 'grabbing' : 'grab',
+          width: haloSizePx,
+          height: haloSizePx,
           transform: 'translate(-50%, -50%)',
+          cursor: dragState?.gearId === gear.id ? 'grabbing' : 'grab',
           userSelect: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 6,
+          borderRadius: '50%',
         }}
       >
         <div
           style={{
-            position: 'relative',
-            width: previewSizePx + 12,
-            height: previewSizePx + 12,
+            width: '100%',
+            height: '100%',
             display: 'grid',
             placeItems: 'center',
             transform: `rotate(${gear.rotationDegrees}deg)`,
@@ -109,7 +107,18 @@ export function CanvasStage({
         >
           <GearSvgPreview gear={gear} size={previewSizePx} />
         </div>
-        <Stack gap={1} align="center">
+        <Stack
+          gap={1}
+          align="center"
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
           <Text fw={700} size="sm">
             {gear.label}
           </Text>
