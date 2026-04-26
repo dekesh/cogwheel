@@ -40,11 +40,9 @@ function buildFilledPath(path: string): string {
 function buildGearPaths(gear: ProjectGear, includeAxleHole: boolean): string[] {
   const { outerPath, innerCutoutPath, axleHolePath } = buildSpurGearPath(gear);
 
-  return [
-    outerPath,
-    innerCutoutPath,
-    includeAxleHole ? axleHolePath : null,
-  ].filter((path): path is string => Boolean(path));
+  return [outerPath, innerCutoutPath, includeAxleHole ? axleHolePath : null].filter(
+    (path): path is string => Boolean(path),
+  );
 }
 
 function buildCombinedGearPath(gear: ProjectGear, includeAxleHole: boolean): string {
@@ -77,22 +75,24 @@ function buildGearGroup(
 ): string {
   const gearPath = buildCombinedGearPath(gear, includeAxleHole);
   const shaftPath = includeShaftPiece ? buildShaftPiecePath(gear, shaftClearanceMm) : null;
-  const rotation = gear.rotationDegrees === 0 ? '' : ` rotate(${formatNumber(-gear.rotationDegrees)})`;
+  const rotation =
+    gear.rotationDegrees === 0 ? '' : ` rotate(${formatNumber(-gear.rotationDegrees)})`;
 
   return [
     `<g transform="translate(${formatNumber(gear.position.x)} ${formatNumber(-gear.position.y)})${rotation}">`,
     exportMode === 'inside' ? buildFilledPath(gearPath) : buildStrokePath(gearPath),
-    shaftPath ? (exportMode === 'inside' ? buildFilledPath(shaftPath) : buildStrokePath(shaftPath)) : '',
+    shaftPath
+      ? exportMode === 'inside'
+        ? buildFilledPath(shaftPath)
+        : buildStrokePath(shaftPath)
+      : '',
     '</g>',
   ]
     .filter(Boolean)
     .join('');
 }
 
-function buildSingleGearSvg(
-  gear: ProjectGear,
-  options: SvgDocumentOptions = {},
-): string {
+function buildSingleGearSvg(gear: ProjectGear, options: SvgDocumentOptions = {}): string {
   const { outerPath, innerCutoutPath, axleHolePath, outerRadiusMm } = buildSpurGearPath(gear);
   const marginMm = options.marginMm ?? Math.max(gear.module * 2, 4);
   const includeAxleHole = options.includeAxleHole ?? true;
@@ -124,11 +124,7 @@ function buildSingleGearSvg(
         }),
       )
     : '';
-  const gearPath = [
-    outerPath,
-    innerCutoutPath,
-    includeAxleHole ? axleHolePath : null,
-  ]
+  const gearPath = [outerPath, innerCutoutPath, includeAxleHole ? axleHolePath : null]
     .filter((path): path is string => Boolean(path))
     .join(' ');
   const shaftPath = includeShaftPiece ? buildShaftPiecePath(gear, shaftClearanceMm) : null;
@@ -137,7 +133,11 @@ function buildSingleGearSvg(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${formatNumber(viewBoxX)} ${formatNumber(viewBoxY)} ${formatNumber(viewBoxWidth)} ${formatNumber(viewBoxHeight)}" width="${formatNumber(viewBoxWidth)}mm" height="${formatNumber(viewBoxHeight)}mm">`,
     metadata,
     exportMode === 'inside' ? buildFilledPath(gearPath) : buildStrokePath(gearPath),
-    shaftPath ? (exportMode === 'inside' ? buildFilledPath(shaftPath) : buildStrokePath(shaftPath)) : '',
+    shaftPath
+      ? exportMode === 'inside'
+        ? buildFilledPath(shaftPath)
+        : buildStrokePath(shaftPath)
+      : '',
     '</svg>',
   ]
     .filter(Boolean)

@@ -1,12 +1,14 @@
 # Gear Math Notes
 
 ## Current assumptions
+
 - V1 targets spur gears.
 - The primary user-facing size parameter is module.
 - Internal length calculations use millimeters.
 - Geometry must eventually support true involute profiles.
 
 ## Current implemented formulas
+
 - Pitch diameter: `module * toothCount`
 - Simple ratio: `drivenToothCount / driverToothCount`
 - Base diameter: `pitchDiameter * cos(pressureAngle)`
@@ -38,17 +40,20 @@
   - render/export the hole separately so preview fill behavior stays robust
 
 ## Planned additions
+
 - Backlash and clearance adjustments for SVG tooth geometry
 - More complete printability heuristics tied to the project print profile
 - Export-ready SVG document generation for whole gears and layouts
 - Higher-fidelity involute controls if the current sampling approach proves insufficient
 
 ## Printability considerations
+
 - Defaults should come from a project-level print profile.
 - Warnings should remain advisory rather than blocking.
 - Users must be able to disable printability warnings.
 
 ## Current parameter semantics
+
 - `Thickness / print depth` is a 3D-print parameter. It represents the extrusion depth of the part and does not change the 2D SVG outline.
 - `Pressure angle` affects the flank geometry and base circle. In the current 2D preview the visible change can be subtle, especially for small parameter adjustments.
 - `Inner cutout diameter` controls the empty center region between the shaft area and the toothed rim.

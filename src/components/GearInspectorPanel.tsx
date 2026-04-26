@@ -1,13 +1,4 @@
-import {
-  Alert,
-  Button,
-  Divider,
-  Select,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-} from '@mantine/core';
+import { Alert, Button, Divider, Select, Stack, Text, TextInput, Title } from '@mantine/core';
 
 import { WheelNumberInput } from './WheelNumberInput';
 import { validateSpurGear } from '../domain/gears/calculations';
@@ -87,7 +78,11 @@ export function GearInspectorPanel({
         <Text size="sm">Base diameter: {selectedGear.geometry.baseDiameterMm.toFixed(2)} mm</Text>
         <Text size="sm">
           Axle gap to rim:{' '}
-          {Math.max(0, (selectedGear.innerCutoutDiameterMm - selectedGear.boreDiameterMm) / 2).toFixed(2)} mm
+          {Math.max(
+            0,
+            (selectedGear.innerCutoutDiameterMm - selectedGear.boreDiameterMm) / 2,
+          ).toFixed(2)}{' '}
+          mm
         </Text>
         <Text size="sm">
           Position: ({selectedGear.position.x.toFixed(1)}, {selectedGear.position.y.toFixed(1)}) mm
@@ -177,9 +172,7 @@ export function GearInspectorPanel({
       </Stack>
 
       <Alert color="yellow" title="Warnings remain permissive">
-        {issues.length === 0
-          ? 'No geometry warnings for the sample gear.'
-          : issues[0].message}
+        {issues.length === 0 ? 'No geometry warnings for the sample gear.' : issues[0].message}
       </Alert>
 
       <Button color="red" variant="light" onClick={() => onRemoveGear(selectedGear.id)}>

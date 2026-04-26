@@ -127,8 +127,12 @@ describe('App', () => {
     });
 
     const createObjectUrlMock = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:gear');
-    const revokeObjectUrlMock = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const revokeObjectUrlMock = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => undefined);
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
 
     render(
       <MantineProvider theme={theme}>
@@ -160,8 +164,12 @@ describe('App', () => {
       expect(object).toBeInstanceOf(Blob);
       return 'blob:gear';
     });
-    const revokeObjectUrlMock = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const revokeObjectUrlMock = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => undefined);
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
 
     render(
       <MantineProvider theme={theme}>

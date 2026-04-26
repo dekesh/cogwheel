@@ -16,10 +16,7 @@ export function getCenterLineAngleDegrees(fromGear: ProjectGear, toGear: Project
   );
 }
 
-export function calculateMeshPhaseOffsetDegrees(
-  driver: ProjectGear,
-  driven: ProjectGear,
-): number {
+export function calculateMeshPhaseOffsetDegrees(driver: ProjectGear, driven: ProjectGear): number {
   const centerLineAngleDegrees = getCenterLineAngleDegrees(driver, driven);
   const drivenToothPitchDegrees = 360 / driven.toothCount;
   const ratio = driver.toothCount / driven.toothCount;
@@ -69,5 +66,7 @@ export function calculateLinkedRotationDegrees(
     return normalizeDegrees((relation.meshPhaseOffsetDegrees - sourceRotationDegrees) * ratio);
   }
 
-  throw new Error(`Relation ${relation.driverGearId} -> ${relation.drivenGearId} does not link the supplied gears`);
+  throw new Error(
+    `Relation ${relation.driverGearId} -> ${relation.drivenGearId} does not link the supplied gears`,
+  );
 }

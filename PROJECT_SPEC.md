@@ -1,9 +1,11 @@
 # Cogwheel Designer
 
 ## Purpose
+
 Build a web app for designing cogwheels for 3D printing.
 
 ## Initial requirements from user
+
 - Users can add different kinds of cogwheels to a canvas.
 - Cogwheels on the canvas should be draggable.
 - Users can modify cogwheel parameters.
@@ -11,6 +13,7 @@ Build a web app for designing cogwheels for 3D printing.
 - The output should be an SVG image.
 
 ## Language and stack constraints
+
 - Frontend should be written in TypeScript.
 - If a backend is needed, use Python with FastAPI.
 - The project should use a professional template and setup, including linting and GitHub Actions.
@@ -19,6 +22,7 @@ Build a web app for designing cogwheels for 3D printing.
 - Keep tests and documentation updated alongside all meaningful code changes.
 
 ## Product decisions confirmed
+
 - V1 should support spur gears first.
 - The architecture should make it easy to add more gear types later.
 - "Match" means:
@@ -113,14 +117,17 @@ Build a web app for designing cogwheels for 3D printing.
   - possible DXF support later
 
 ## Open questions
+
 - None blocking for v1 requirements gathering.
 
 ## Notes
+
 - This file is intended to be the living source of truth during requirements gathering.
 
 ## Implementation research
 
 ### Recommended scaffold
+
 - Base the project on the official Mantine Vite template rather than plain `create-vite`.
 - Rationale:
   - the product is UI-heavy
@@ -129,6 +136,7 @@ Build a web app for designing cogwheels for 3D printing.
   - this reduces setup risk and gets tests/tooling in place from day one
 
 ### Recommended stack
+
 - Build tool: Vite
 - Frontend framework: React
 - Language: TypeScript with strict mode
@@ -147,10 +155,12 @@ Build a web app for designing cogwheels for 3D printing.
   - GitHub Actions job for Playwright browser tests
 
 ### Why not start from plain Vite
+
 - Official Vite React TypeScript templates are a good base, but they do not provide the fuller UI-focused setup we want by default.
 - The Mantine template is a better fit for the stated requirement of a professional setup with a documented component library and testing from the start.
 
 ### Testing strategy
+
 - Use Vitest for fast logic and React component tests:
   - gear math
   - validation
@@ -164,9 +174,11 @@ Build a web app for designing cogwheels for 3D printing.
   - SVG export flow
 
 ### Current implementation recommendation
+
 - Start from Mantine's official full Vite template, then customize it to the app architecture rather than assembling all tooling manually from a bare Vite starter.
 
 ### Sources consulted
+
 - Vite Getting Started: https://vite.dev/guide/
 - Mantine Vite guide: https://mantine.dev/guides/vite/
 - Mantine Vite template: https://github.com/mantinedev/vite-template

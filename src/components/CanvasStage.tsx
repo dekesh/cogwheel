@@ -49,7 +49,9 @@ export function CanvasStage({
   const contentHeightPx = CANVAS_HEIGHT_MM * pixelsPerMillimeter;
 
   function changeZoom(delta: number) {
-    setZoom((current) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number((current + delta).toFixed(2)))));
+    setZoom((current) =>
+      Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number((current + delta).toFixed(2)))),
+    );
   }
 
   function renderGear(gear: GearProject['gears'][number]) {
@@ -102,8 +104,7 @@ export function CanvasStage({
               selectedGearId === gear.id
                 ? 'radial-gradient(circle, rgba(255,244,229,0.95) 0%, rgba(255,244,229,0.2) 62%, transparent 74%)'
                 : undefined,
-            boxShadow:
-              selectedGearId === gear.id ? '0 0 0 2px rgba(197, 107, 16, 0.22)' : 'none',
+            boxShadow: selectedGearId === gear.id ? '0 0 0 2px rgba(197, 107, 16, 0.22)' : 'none',
           }}
         >
           <GearSvgPreview gear={gear} size={previewSizePx} />
@@ -147,8 +148,7 @@ export function CanvasStage({
         (event.clientX - bounds.left + scrollLeft - activeDrag.pointerOffsetX) /
         pixelsPerMillimeter;
       const y =
-        (event.clientY - bounds.top + scrollTop - activeDrag.pointerOffsetY) /
-        pixelsPerMillimeter;
+        (event.clientY - bounds.top + scrollTop - activeDrag.pointerOffsetY) / pixelsPerMillimeter;
       const movingGear = project.gears.find((gear) => gear.id === activeDrag.gearId);
 
       if (!movingGear) {

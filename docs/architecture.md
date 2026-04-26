@@ -1,14 +1,17 @@
 # Architecture Notes
 
 ## Intent
+
 The application should separate domain logic from UI and rendering so future gear types and export formats do not force large rewrites.
 
 ## Current layers
+
 - `src/domain/gears`: gear-specific types, calculations, and factories
 - `src/domain/project`: project-wide models, printer defaults, and relation state
 - `src/components`: presentation and interaction surfaces
 
 ## Current domain responsibilities
+
 - `src/domain/gears/calculations.ts` now owns:
   - derived standard spur-gear dimensions
   - simple meshing compatibility checks
@@ -38,6 +41,7 @@ The application should separate domain logic from UI and rendering so future gea
   - center-distance-preserving placement near compatible gears
 
 ## Planned layers
+
 - `src/features/canvas`: canvas state, drag behavior, snapping, zoom, and alignment
 - `src/features/gear-editor`: parameter forms, warnings, and presets
 - `src/features/matching`: compatible-gear creation and meshing rules
@@ -45,6 +49,7 @@ The application should separate domain logic from UI and rendering so future gea
 - `src/features/autosave`: browser persistence and project hydration
 
 ## Design constraints
+
 - Gear geometry must not live inside React components.
 - Matching rules must not assume spur gears are the only future gear type.
 - Export logic should remain testable without a browser.

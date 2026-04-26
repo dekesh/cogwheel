@@ -24,9 +24,13 @@ test('loads the shell and sample gear cards', async ({ page }) => {
 
   await page.mouse.move(newGearBox.x + newGearBox.width / 2, newGearBox.y + newGearBox.height / 2);
   await page.mouse.down();
-  await page.mouse.move(newGearBox.x + newGearBox.width / 2 + 110, newGearBox.y + newGearBox.height / 2 - 30, {
-    steps: 10,
-  });
+  await page.mouse.move(
+    newGearBox.x + newGearBox.width / 2 + 110,
+    newGearBox.y + newGearBox.height / 2 - 30,
+    {
+      steps: 10,
+    },
+  );
   await page.mouse.up();
 
   await expect(page.getByText(/Position:/)).toContainText('Position:');

@@ -42,7 +42,11 @@ export function App() {
       exportMode,
     });
 
-    downloadTextFile(`${selectedGear.label.replaceAll(/\s+/g, '-').toLowerCase()}.svg`, document, 'image/svg+xml');
+    downloadTextFile(
+      `${selectedGear.label.replaceAll(/\s+/g, '-').toLowerCase()}.svg`,
+      document,
+      'image/svg+xml',
+    );
   }
 
   function handleExportLayout() {

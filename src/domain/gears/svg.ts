@@ -89,9 +89,7 @@ function formatPoint(point: Point): string {
 }
 
 function buildClosedPath(points: Point[]): string {
-  const segments = points.map((point, index) =>
-    `${index === 0 ? 'M' : 'L'} ${formatPoint(point)}`,
-  );
+  const segments = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${formatPoint(point)}`);
 
   return `${segments.join(' ')} Z`;
 }
@@ -110,8 +108,7 @@ export function calculateToothHalfAngleAtRadius(
   pitchHalfThicknessAngle: number,
 ): number {
   return (
-    pitchHalfThicknessAngle -
-    (calculateInvolutePolarAngle(radius, baseRadius) - pitchInvoluteAngle)
+    pitchHalfThicknessAngle - (calculateInvolutePolarAngle(radius, baseRadius) - pitchInvoluteAngle)
   );
 }
 
@@ -169,13 +166,7 @@ export function buildSpurGearPath(
     localRightFlank[localRightFlank.length - 1].x,
   );
 
-  const localOuterArc = sampleArc(
-    outsideRadius,
-    outerStartAngle,
-    outerEndAngle,
-    arcSteps,
-    false,
-  );
+  const localOuterArc = sampleArc(outsideRadius, outerStartAngle, outerEndAngle, arcSteps, false);
   const localLeftRootPoint = createPolarPoint(
     rootRadius,
     Math.atan2(localLeftFlank[0].y, localLeftFlank[0].x),

@@ -82,10 +82,10 @@ function createProjectGear(
   basedOn?: ProjectGear,
 ): ProjectGear {
   const toothCount =
-    overrides.toothCount ??
-    (basedOn ? Math.min(80, Math.max(12, basedOn.toothCount + 10)) : 24);
+    overrides.toothCount ?? (basedOn ? Math.min(80, Math.max(12, basedOn.toothCount + 10)) : 24);
   const moduleValue = overrides.module ?? basedOn?.module ?? 2;
-  const pressureAngleDegrees = overrides.pressureAngleDegrees ?? basedOn?.pressureAngleDegrees ?? 20;
+  const pressureAngleDegrees =
+    overrides.pressureAngleDegrees ?? basedOn?.pressureAngleDegrees ?? 20;
   const thicknessMm = overrides.thicknessMm ?? basedOn?.thicknessMm ?? 8;
   const boreDiameterMm = overrides.boreDiameterMm ?? basedOn?.boreDiameterMm ?? 5;
   const innerCutoutDiameterMm =
@@ -300,11 +300,7 @@ export function projectReducer(
         x: sourceGear.position.x + dx,
         y: sourceGear.position.y,
       };
-      const snapResult = snapGearPosition(
-        nextGear,
-        snappedPosition,
-        state.project.gears,
-      );
+      const snapResult = snapGearPosition(nextGear, snappedPosition, state.project.gears);
       const nextPlacedGear = {
         ...nextGear,
         position: snapResult.position,
@@ -363,11 +359,7 @@ export function projectReducer(
     case 'move-gear': {
       const movingGear = getGearById(state.project.gears, action.gearId);
       const otherGears = state.project.gears.filter((gear) => gear.id !== action.gearId);
-      const snapResult = snapGearPosition(
-        movingGear,
-        { x: action.x, y: action.y },
-        otherGears,
-      );
+      const snapResult = snapGearPosition(movingGear, { x: action.x, y: action.y }, otherGears);
       const nextGears = state.project.gears.map((gear) =>
         gear.id === action.gearId
           ? {
@@ -377,7 +369,11 @@ export function projectReducer(
             }
           : gear,
       );
-      const nextRelations = updateRelations(state.project.relations, action.gearId, snapResult.relation);
+      const nextRelations = updateRelations(
+        state.project.relations,
+        action.gearId,
+        snapResult.relation,
+      );
 
       return {
         ...state,

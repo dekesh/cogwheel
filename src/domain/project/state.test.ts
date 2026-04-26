@@ -45,7 +45,10 @@ describe('project reducer', () => {
     }
 
     expect(
-      Math.hypot(movedGear.position.x - driverGear.position.x, movedGear.position.y - driverGear.position.y),
+      Math.hypot(
+        movedGear.position.x - driverGear.position.x,
+        movedGear.position.y - driverGear.position.y,
+      ),
     ).toBeCloseTo(calculateCenterDistance(driverGear, movedGear), 4);
   });
 

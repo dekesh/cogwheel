@@ -47,7 +47,10 @@ export function WheelNumberInput({
         }
       }}
       onWheel={(event) => {
-        if (!(event.currentTarget instanceof HTMLElement) || !event.currentTarget.matches(':focus-within')) {
+        if (
+          !(event.currentTarget instanceof HTMLElement) ||
+          !event.currentTarget.matches(':focus-within')
+        ) {
           return;
         }
 

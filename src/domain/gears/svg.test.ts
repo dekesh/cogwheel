@@ -85,7 +85,9 @@ describe('spur gear SVG generation', () => {
     const baseRadius = gear.geometry.baseDiameterMm / 2;
     const pitchRadius = gear.pitchDiameterMm / 2;
     const outerRadius = gear.geometry.outsideDiameterMm / 2;
-    const pitchInvoluteAngle = Math.sqrt((pitchRadius * pitchRadius) / (baseRadius * baseRadius) - 1);
+    const pitchInvoluteAngle = Math.sqrt(
+      (pitchRadius * pitchRadius) / (baseRadius * baseRadius) - 1,
+    );
     const correctedPitchInvoluteAngle = pitchInvoluteAngle - Math.atan(pitchInvoluteAngle);
     const pitchHalfThicknessAngle =
       gear.geometry.toothThicknessAtPitchMm / (2 * gear.geometry.pitchRadiusMm);

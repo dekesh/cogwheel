@@ -31,10 +31,7 @@ export function calculateCircularPitch(moduleValue: number): number {
   return Math.PI * moduleValue;
 }
 
-export function calculateToothThicknessAtPitch(
-  moduleValue: number,
-  backlashMm: number,
-): number {
+export function calculateToothThicknessAtPitch(moduleValue: number, backlashMm: number): number {
   return calculateCircularPitch(moduleValue) / 2 - backlashMm / 2;
 }
 
@@ -76,8 +73,7 @@ export function calculateCenterDistance(driver: SpurGear, driven: SpurGear): num
 
 export function canMeshSpurGears(driver: SpurGear, driven: SpurGear): boolean {
   return (
-    driver.module === driven.module &&
-    driver.pressureAngleDegrees === driven.pressureAngleDegrees
+    driver.module === driven.module && driver.pressureAngleDegrees === driven.pressureAngleDegrees
   );
 }
 

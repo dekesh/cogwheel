@@ -1,21 +1,25 @@
 # Handoff Log
 
 ## Purpose
+
 This file tracks what has been decided, what has been done, and what remains so another contributor can continue without re-discovery.
 
 ## Working rules
+
 - Update this file whenever meaningful progress is made.
 - Keep tests aligned with behavior and architecture changes.
 - Keep docs aligned with code and product decisions.
 - Record open risks, assumptions, and next steps explicitly.
 
 ## Current status
+
 - Requirements gathering is complete enough to begin implementation.
 - A manual source scaffold has been created.
 - Baseline code, tests, docs, and CI config files exist.
 - Local install, lint, typecheck, unit tests, build, and Playwright smoke tests have all been validated successfully.
 
 ## Completed work
+
 - Captured product requirements and implementation constraints in `PROJECT_SPEC.md`.
 - Researched and recommended the initial frontend stack.
 - Created the initial source scaffold for the app:
@@ -105,6 +109,7 @@ This file tracks what has been decided, what has been done, and what remains so 
   - optional shaft-piece contours now export centered on the gear instead of offset below it
 
 ## Key product decisions
+
 - V1 supports spur gears first.
 - Architecture must support adding more gear types later.
 - Matching behavior includes compatibility checks, snapping, ratio-aware rotation preview, and invalid-pairing prevention/warnings.
@@ -119,6 +124,7 @@ This file tracks what has been decided, what has been done, and what remains so 
 - Future JSON import/export should be designed in from the start.
 
 ## Key engineering decisions
+
 - Use a professional scaffold with strict TypeScript.
 - Keep files reasonably small.
 - Keep functions reasonably simple.
@@ -127,9 +133,11 @@ This file tracks what has been decided, what has been done, and what remains so 
 - English-only UI for V1.
 
 ## Recommended scaffold
+
 - Start from Mantine's official Vite template and adapt it to the app architecture.
 
 ## Immediate next steps
+
 1. Add autosave and future JSON import/export scaffolding around the reducer-backed state.
 2. Extend canvas interaction with zoom/pan, disconnect actions, and rotation preview.
 3. Add per-gear export from the inspector and optional multi-file export flow.
@@ -137,6 +145,7 @@ This file tracks what has been decided, what has been done, and what remains so 
 5. Consider undo/redo for add/remove/edit operations.
 
 ## Open risks / design points to watch
+
 - Gear geometry and meshing rules should live in domain modules, not UI components.
 - Printability warnings must be configurable and not hard-coded.
 - Canvas architecture should avoid locking the app into spur-only assumptions.
@@ -150,6 +159,7 @@ This file tracks what has been decided, what has been done, and what remains so 
 - The current center-cutout model is a simple concentric circular cutout. There are no spokes, keyed shafts, or custom hub geometries yet.
 
 ## Sources used for stack research
+
 - Vite guide: https://vite.dev/guide/
 - Mantine Vite guide: https://mantine.dev/guides/vite/
 - Mantine Vite template: https://github.com/mantinedev/vite-template
