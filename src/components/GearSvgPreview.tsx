@@ -8,9 +8,13 @@ type GearSvgPreviewProps = {
   size?: number;
 };
 
+export function calculateGearPreviewMarginMm(moduleValue: number): number {
+  return Math.max(moduleValue * 2, 4);
+}
+
 export function GearSvgPreview({ gear, size = 180 }: GearSvgPreviewProps) {
   const { outerPath, cutoutPaths, outerRadiusMm, boreRadiusMm } = buildSpurGearPath(gear);
-  const marginMm = Math.max(gear.module * 2, 4);
+  const marginMm = calculateGearPreviewMarginMm(gear.module);
   const viewRadius = outerRadiusMm + marginMm;
   const boreLabelStyle: CSSProperties = {
     fontSize: 2.4,

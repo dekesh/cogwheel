@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActionIcon, Group, Paper, Stack, Text, Title } from '@mantine/core';
 
-import { GearSvgPreview } from './GearSvgPreview';
+import { GearSvgPreview, calculateGearPreviewMarginMm } from './GearSvgPreview';
 import { snapGearPosition } from '../domain/project/layout';
 import type { GearProject } from '../domain/project/types';
 
@@ -10,7 +10,6 @@ const CANVAS_WIDTH_MM = 180;
 const CANVAS_HEIGHT_MM = 120;
 const CANVAS_MIN_HEIGHT_MM = 120;
 const MINIMUM_GEAR_PREVIEW_SIZE = 72;
-const PREVIEW_MARGIN_MM = 4;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.5;
 const ZOOM_STEP = 0.25;
@@ -55,7 +54,8 @@ export function CanvasStage({
   }
 
   function renderGear(gear: GearProject['gears'][number]) {
-    const previewDiameterMm = gear.geometry.outsideDiameterMm + PREVIEW_MARGIN_MM * 2;
+    const previewDiameterMm =
+      gear.geometry.outsideDiameterMm + calculateGearPreviewMarginMm(gear.module) * 2;
     const previewSizePx = Math.max(
       MINIMUM_GEAR_PREVIEW_SIZE,
       previewDiameterMm * pixelsPerMillimeter,
