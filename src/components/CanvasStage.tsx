@@ -30,6 +30,7 @@ type DragState = {
 type DragPreview = {
   movingGearId: string;
   snappedToGearId: string | null;
+  snapMode: 'mesh' | 'stack' | null;
   previewPosition: { x: number; y: number };
 };
 
@@ -40,9 +41,29 @@ export function CanvasStage({
   onSelectGear,
 }: CanvasStageProps) {
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const dragPreviewRef = useRef<DragPreview | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
+  const [stackOrder, setStackOrder] = useState<string[]>(() =>
+    project.gears.map((gear) => gear.id),
+  );
   const [zoom, setZoom] = useState(1);
+
+  useEffect(() => {
+    setStackOrder((previous) => {
+      const knownIds = new Set(project.gears.map((gear) => gear.id));
+      const filtered = previous.filter((id) => knownIds.has(id));
+      const tracked = new Set(filtered);
+
+      for (const gear of project.gears) {
+        if (!tracked.has(gear.id)) {
+          filtered.push(gear.id);
+        }
+      }
+
+      return filtered;
+    });
+  }, [project.gears]);
   const pixelsPerMillimeter = PIXELS_PER_MILLIMETER * zoom;
   const contentWidthPx = CANVAS_WIDTH_MM * pixelsPerMillimeter;
   const contentHeightPx = CANVAS_HEIGHT_MM * pixelsPerMillimeter;
@@ -87,6 +108,10 @@ export function CanvasStage({
           cursor: dragState?.gearId === gear.id ? 'grabbing' : 'grab',
           userSelect: 'none',
           borderRadius: '50%',
+          zIndex:
+            dragState?.gearId === gear.id
+              ? 1000
+              : Math.max(0, stackOrder.indexOf(gear.id)) + 1,
         }}
       >
         <div
@@ -170,16 +195,29 @@ export function CanvasStage({
         project.gears.filter((gear) => gear.id !== activeDrag.gearId),
       );
 
-      setDragPreview({
+      const nextPreview: DragPreview = {
         movingGearId: activeDrag.gearId,
         snappedToGearId: previewResult.snappedToGearId,
+        snapMode: previewResult.mode,
         previewPosition: previewResult.position,
-      });
+      };
+      dragPreviewRef.current = nextPreview;
+      setDragPreview(nextPreview);
 
       onMoveGear(activeDrag.gearId, x, y);
     }
 
     function handlePointerUp() {
+      const finalPreview = dragPreviewRef.current;
+
+      if (finalPreview?.snapMode === 'stack') {
+        setStackOrder((previous) => [
+          ...previous.filter((id) => id !== finalPreview.movingGearId),
+          finalPreview.movingGearId,
+        ]);
+      }
+
+      dragPreviewRef.current = null;
       setDragState(null);
       setDragPreview(null);
     }

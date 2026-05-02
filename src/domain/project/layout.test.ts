@@ -57,6 +57,30 @@ describe('project layout snapping', () => {
     );
   });
 
+  it('snaps to a gear center when dropped on top, without creating a relation', () => {
+    const stationary = createProjectGear('bottom', 20, { x: 60, y: 60 });
+    stationary.rotationDegrees = 17;
+    const moving = createProjectGear('top', 30, { x: 0, y: 0 });
+
+    const result = snapGearPosition(moving, { x: 62, y: 59 }, [stationary]);
+
+    expect(result.snappedToGearId).toBe('bottom');
+    expect(result.position).toEqual({ x: 60, y: 60 });
+    expect(result.relation).toBeNull();
+    expect(result.rotationDegrees).toBe(17);
+  });
+
+  it('prefers stacking over meshing when the cursor is near a gear center', () => {
+    const stationary = createProjectGear('bottom', 20, { x: 60, y: 60 });
+    const moving = createProjectGear('top', 20, { x: 0, y: 0 });
+
+    const result = snapGearPosition(moving, { x: 61, y: 60 }, [stationary]);
+
+    expect(result.snappedToGearId).toBe('bottom');
+    expect(result.position).toEqual({ x: 60, y: 60 });
+    expect(result.relation).toBeNull();
+  });
+
   it('does not snap incompatible gears', () => {
     const stationary = {
       ...createProjectGear('driver', 20, { x: 60, y: 60 }),

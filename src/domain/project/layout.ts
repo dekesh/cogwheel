@@ -2,11 +2,14 @@ import { calculateCenterDistance, canMeshSpurGears } from '../gears/calculations
 import { calculateDrivenRotationDegrees, createLockedMeshRelation } from './meshing';
 import type { CanvasPosition, GearMeshRelation, ProjectGear } from './types';
 
+export type SnapMode = 'mesh' | 'stack';
+
 export type SnapResult = {
   position: CanvasPosition;
   relation: GearMeshRelation | null;
   snappedToGearId: string | null;
   rotationDegrees: number | null;
+  mode: SnapMode | null;
 };
 
 function calculateDistance(a: CanvasPosition, b: CanvasPosition): number {
@@ -26,6 +29,10 @@ function normalize(dx: number, dy: number): { x: number; y: number } {
   return { x: dx / magnitude, y: dy / magnitude };
 }
 
+function calculateStackSnapTolerance(movingGear: ProjectGear, candidate: ProjectGear): number {
+  return Math.min(movingGear.geometry.pitchRadiusMm, candidate.geometry.pitchRadiusMm);
+}
+
 export function snapGearPosition(
   movingGear: ProjectGear,
   nextPosition: CanvasPosition,
@@ -36,27 +43,41 @@ export function snapGearPosition(
     relation: null,
     snappedToGearId: null,
     rotationDegrees: null,
+    mode: null,
   };
-  let bestDistanceDelta = Number.POSITIVE_INFINITY;
+  let bestDelta = Number.POSITIVE_INFINITY;
 
   for (const candidate of otherGears) {
+    const dx = nextPosition.x - candidate.position.x;
+    const dy = nextPosition.y - candidate.position.y;
+    const currentDistance = calculateDistance(nextPosition, candidate.position);
+
+    const stackTolerance = calculateStackSnapTolerance(movingGear, candidate);
+
+    if (currentDistance <= stackTolerance && currentDistance < bestDelta) {
+      bestDelta = currentDistance;
+      bestResult = {
+        position: { x: candidate.position.x, y: candidate.position.y },
+        relation: null,
+        snappedToGearId: candidate.id,
+        rotationDegrees: candidate.rotationDegrees,
+        mode: 'stack',
+      };
+    }
+
     if (!canMeshSpurGears(movingGear, candidate)) {
       continue;
     }
 
     const expectedCenterDistance = calculateCenterDistance(movingGear, candidate);
-    const dx = nextPosition.x - candidate.position.x;
-    const dy = nextPosition.y - candidate.position.y;
-    const currentDistance = calculateDistance(nextPosition, candidate.position);
     const distanceDelta = Math.abs(currentDistance - expectedCenterDistance);
-    const snapTolerance = Math.max(3, movingGear.module * 3);
+    const meshTolerance = Math.max(3, movingGear.module * 3);
 
-    if (distanceDelta > snapTolerance || distanceDelta >= bestDistanceDelta) {
+    if (distanceDelta > meshTolerance || distanceDelta >= bestDelta) {
       continue;
     }
 
     const direction = normalize(dx, dy);
-
     const positionedMovingGear = {
       ...movingGear,
       position: {
@@ -66,7 +87,7 @@ export function snapGearPosition(
     };
     const relation = createLockedMeshRelation(candidate, positionedMovingGear);
 
-    bestDistanceDelta = distanceDelta;
+    bestDelta = distanceDelta;
     bestResult = {
       position: positionedMovingGear.position,
       relation,
@@ -76,6 +97,7 @@ export function snapGearPosition(
         positionedMovingGear,
         relation.meshPhaseOffsetDegrees,
       ),
+      mode: 'mesh',
     };
   }
 
